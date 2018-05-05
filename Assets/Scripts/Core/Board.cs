@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using Utility;
 
 namespace Core {
 
@@ -10,12 +11,35 @@ namespace Core {
     [SerializeField] private int _height = 30;
     [SerializeField] private int _width = 10;
 
-    public void Awake() {
-      _grid = new Transform[_width, _height];
+    public bool IsValidPosition(Piece piece) {
+      foreach (Transform child in piece.transform) {
+        Vector2 position = Vectorf.Round(child.position);
+
+        if (!IsWithinBoard((int)position.x, (int)position.y)) {
+          return false;
+        }
+
+        if (IsOccupied((int)position.x, (int)position.y, piece)) {
+          return false;
+        }
+      }
+
+      return true;
     }
 
-    public void Start() {
-      DrawEmptyCells();
+    public void StorePieceInGrid(Piece piece) {
+      if (piece == null) {
+        return;
+      }
+
+      foreach (Transform child in piece.transform) {
+        Vector2 position = Vectorf.Round(child.position);
+        _grid[(int)position.x, (int)position.y] = child;
+      }
+    }
+
+    private void Awake() {
+      _grid = new Transform[_width, _height];
     }
 
     private void DrawEmptyCells() {
@@ -30,6 +54,14 @@ namespace Core {
       } else {
         Debug.LogWarning("Empty Sprite is missing");
       }
+    }
+
+    private bool IsOccupied(int x, int y, Piece piece) => _grid[x, y] != null && _grid[x, y].parent != piece.transform;
+
+    private bool IsWithinBoard(int x, int y) => x >= 0 && x < _width && y >= 0;
+
+    private void Start() {
+      DrawEmptyCells();
     }
 
   }
