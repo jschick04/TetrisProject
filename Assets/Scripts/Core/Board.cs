@@ -21,6 +21,16 @@ namespace Core {
       }
     }
 
+    public bool IsAboveThreshold(Piece piece) {
+      foreach (Transform child in piece.transform) {
+        if (child.transform.position.y >= _height - _header - 1) {
+          return true;
+        }
+      }
+
+      return false;
+    }
+
     public bool IsValidPosition(Piece piece) {
       foreach (Transform child in piece.transform) {
         Vector2 position = Vectorf.Round(child.position);

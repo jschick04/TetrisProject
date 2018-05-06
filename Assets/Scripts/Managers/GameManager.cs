@@ -1,5 +1,6 @@
 ﻿using Core;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace Managers {
 
@@ -11,8 +12,23 @@ namespace Managers {
     [SerializeField] private Board _board;
     private float _dropSpeed = 0.5f;
     private float _dropTimer;
+    private bool _gameOver;
+    [SerializeField] private GameObject _gameOverPanel;
     private float _inputTimer;
     [SerializeField] private Spawner _spawner;
+
+    public void RestartLevel() {
+      SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+    }
+
+    private void GameOver() {
+      Debug.LogWarning($"{_activePiece.name} is above the limit - Game Over");
+      _gameOver = true;
+
+      if (_gameOverPanel != null) {
+        _gameOverPanel.SetActive(true);
+      }
+    }
 
     private void ProcessInput() {
       bool inputReady;
@@ -66,7 +82,7 @@ namespace Managers {
     }
 
     private void Update() {
-      if (_board == null || _spawner == null) {
+      if (_board == null || _spawner == null || _gameOver) {
         return;
       }
 
@@ -87,10 +103,15 @@ namespace Managers {
 
       if (!_board.IsValidPosition(_activePiece)) {
         _activePiece.MoveUp();
-        _board.StorePieceInGrid(_activePiece);
 
-        _activePiece = _spawner.SpawnPiece();
-        _board.ClearAllRows();
+        if (_board.IsAboveThreshold(_activePiece)) {
+          GameOver();
+        } else {
+          _board.StorePieceInGrid(_activePiece);
+
+          _activePiece = _spawner.SpawnPiece();
+          _board.ClearAllRows();
+        }
       }
     }
 
