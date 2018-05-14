@@ -5,15 +5,21 @@ namespace Core {
 
   public class Board : MonoBehaviour {
 
+    private float _completedRows;
     [SerializeField] private Transform _emptySprite;
     private Transform[,] _grid;
     [SerializeField] private int _header = 8;
     [SerializeField] private int _height = 30;
     [SerializeField] private int _width = 10;
 
+    public float CompletedRows => _completedRows;
+
     public void ClearAllRows() {
+      _completedRows = 0;
+
       for (int y = 0; y < _height; y++) {
         if (IsComplete(y)) {
+          _completedRows++;
           ClearRow(y);
           MoveAllRowsDown(y + 1);
           y--;

@@ -1,4 +1,5 @@
-﻿using Core;
+﻿using System;
+using Core;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -10,11 +11,13 @@ namespace Managers {
 
     private Piece _activePiece;
     [SerializeField] private Board _board;
+    private Camera _camera;
     private float _dropSpeed = 0.5f;
     private float _dropTimer;
     private bool _gameOver;
     [SerializeField] private GameObject _gameOverPanel;
     private float _inputTimer;
+    [SerializeField] private SoundManager _soundManager;
     [SerializeField] private Spawner _spawner;
 
     public void RestartLevel() {
@@ -28,6 +31,19 @@ namespace Managers {
       if (_gameOverPanel != null) {
         _gameOverPanel.SetActive(true);
       }
+
+      PlayFx(_soundManager.GameOverVocal);
+      PlayFx(_soundManager.GameOverSound);
+    }
+
+    private Action OnRowCompletion() => () => PlayFx(_soundManager.ClearRowSound);
+
+    private void PlayFx(AudioClip fx) {
+      if (_camera == null || !_soundManager.FxEnabled || fx == null) {
+        return;
+      }
+
+      AudioSource.PlayClipAtPoint(fx, _camera.transform.position, _soundManager.FxVolume);
     }
 
     private void ProcessInput() {
@@ -46,6 +62,9 @@ namespace Managers {
 
         if (!_board.IsValidPosition(_activePiece)) {
           _activePiece.MoveRight();
+          PlayFx(_soundManager.ErrorSound);
+        } else {
+          PlayFx(_soundManager.MoveSound);
         }
       } else if (Input.GetKey(KeyCode.D) && inputReady || Input.GetKeyDown(KeyCode.D)) {
         _activePiece.MoveRight();
@@ -53,8 +72,13 @@ namespace Managers {
 
         if (!_board.IsValidPosition(_activePiece)) {
           _activePiece.MoveLeft();
+          PlayFx(_soundManager.ErrorSound);
+        } else {
+          PlayFx(_soundManager.MoveSound);
         }
-      } else if (Input.GetKey(KeyCode.Space) && inputReady) {
+      }
+
+      if (Input.GetKey(KeyCode.W) && inputReady) {
         _activePiece.RotateRight();
         _inputTimer = InputDelay;
 
@@ -79,10 +103,12 @@ namespace Managers {
       if (_activePiece == null) {
         _activePiece = _spawner.SpawnPiece();
       }
+
+      _camera = Camera.main;
     }
 
     private void Update() {
-      if (_board == null || _spawner == null || _gameOver) {
+      if (_board == null || _spawner == null || _gameOver || _soundManager == null) {
         return;
       }
 
@@ -111,6 +137,16 @@ namespace Managers {
 
           _activePiece = _spawner.SpawnPiece();
           _board.ClearAllRows();
+
+          PlayFx(_soundManager.DropSound);
+
+          if (_board.CompletedRows > 0) {
+            if (_board.CompletedRows > 1) {
+              PlayFx(_soundManager.GetRandomVocal());
+            }
+
+            PlayFx(_soundManager.ClearRowSound);
+          }
         }
       }
     }
