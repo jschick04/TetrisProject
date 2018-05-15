@@ -7,7 +7,7 @@ namespace Core {
     [SerializeField] private Piece[] _pieces;
 
     public Piece SpawnPiece() {
-      Piece piece = Instantiate(GetRandomPiece(), transform.position, Quaternion.identity);
+      Piece piece = Instantiate(GetRandomPiece(), transform.position, Quaternion.identity, gameObject.transform);
 
       if (piece) {
         return piece;

@@ -5,14 +5,15 @@ namespace Managers {
 
   public class SoundManager : MonoBehaviour {
 
+    public AudioSource musicSource;
+
     [SerializeField] private AudioClip[] _backgroundMusicClips;
-    [SerializeField] private AudioClip _clearRowSound, _dropSound, _errorSound, _gameOverSound, _gameOverVocal, _moveSound;
+    [SerializeField] private AudioClip _clearRowSound, _dropSound, _errorSound, _levelUp, _gameOverSound, _gameOverVocal, _moveSound;
     [SerializeField] private bool _fxEnabled = true;
     [SerializeField] private IconToggle _fxIconToggle;
     [SerializeField][Range(0, 1)] private float _fxVolume = 1f;
     [SerializeField] private bool _musicEnabled = true;
     [SerializeField] private IconToggle _musicIconToggle;
-    [SerializeField] private AudioSource _musicSource;
     [SerializeField][Range(0, 1)] private float _musicVolume = 1f;
     [SerializeField] private AudioClip[] _vocalClips;
 
@@ -30,22 +31,26 @@ namespace Managers {
 
     public AudioClip GameOverVocal => _gameOverVocal;
 
+    public AudioClip LevelUp => _levelUp;
+
     public AudioClip MoveSound => _moveSound;
+
+    public float MusicVolume => _musicVolume;
 
     public AudioClip GetRandomVocal() => GetRandomClip(_vocalClips);
 
     public void PlayBackgroundMusic(AudioClip musicClip) {
-      if (!_musicEnabled || !musicClip || !_musicSource) {
+      if (!_musicEnabled || !musicClip || !musicSource) {
         return;
       }
 
-      _musicSource.Stop();
+      musicSource.Stop();
 
-      _musicSource.clip = musicClip;
-      _musicSource.volume = _musicVolume;
-      _musicSource.loop = true;
+      musicSource.clip = musicClip;
+      musicSource.volume = _musicVolume;
+      musicSource.loop = true;
 
-      _musicSource.Play();
+      musicSource.Play();
     }
 
     public void ToggleFx() {
@@ -72,14 +77,14 @@ namespace Managers {
     }
 
     private void UpdateMusic() {
-      if (_musicSource.isPlaying == _musicEnabled) {
+      if (musicSource.isPlaying == _musicEnabled) {
         return;
       }
 
       if (_musicEnabled) {
         PlayBackgroundMusic(GetRandomClip(_backgroundMusicClips));
       } else {
-        _musicSource.Stop();
+        musicSource.Stop();
       }
     }
 

@@ -22,6 +22,14 @@ namespace Core {
       Move(new Vector3(0, 1, 0));
     }
 
+    public void RotateClockwise(bool clockwise) {
+      if (clockwise) {
+        RotateRight();
+      } else {
+        RotateLeft();
+      }
+    }
+
     public void RotateLeft() {
       if (_canRotate) {
         transform.Rotate(0, 0, 90);
