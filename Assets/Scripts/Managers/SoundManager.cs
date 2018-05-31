@@ -8,7 +8,7 @@ namespace Managers {
     public AudioSource musicSource;
 
     [SerializeField] private AudioClip[] _backgroundMusicClips;
-    [SerializeField] private AudioClip _clearRowSound, _dropSound, _errorSound, _levelUp, _gameOverSound, _gameOverVocal, _moveSound;
+    [SerializeField] private AudioClip _clearRowSound, _dropSound, _errorSound, _gameOverSound, _gameOverVocal, _holdSound, _levelUp, _moveSound;
     [SerializeField] private bool _fxEnabled = true;
     [SerializeField] private IconToggle _fxIconToggle;
     [SerializeField][Range(0, 1)] private float _fxVolume = 1f;
@@ -30,6 +30,8 @@ namespace Managers {
     public AudioClip GameOverSound => _gameOverSound;
 
     public AudioClip GameOverVocal => _gameOverVocal;
+
+    public AudioClip HoldSound => _holdSound;
 
     public AudioClip LevelUp => _levelUp;
 

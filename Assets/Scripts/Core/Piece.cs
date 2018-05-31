@@ -5,6 +5,9 @@ namespace Core {
   public class Piece : MonoBehaviour {
 
     [SerializeField] private bool _canRotate = true;
+    [SerializeField] private Vector3 _queueOffset;
+
+    public Vector3 QueueOffset => _queueOffset;
 
     public void MoveDown() {
       Move(new Vector3(0, -1, 0));

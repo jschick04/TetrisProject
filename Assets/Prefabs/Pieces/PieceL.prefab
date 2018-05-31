@@ -171,6 +171,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 699d5b9e2cbb7884b9bc73142854bee6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _canRotate: 1
+  _queueOffset: {x: -0.25, y: 0, z: 0}
 --- !u!212 &212085604978655070
 SpriteRenderer:
   m_ObjectHideFlags: 1

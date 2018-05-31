@@ -9,7 +9,7 @@ namespace Managers {
 
     private const float DownInputDelay = 0.05f;
     private const float InitialDropSpeed = 0.5f;
-    private const float InputDelay = 0.1f;
+    private const float InputDelay = 0.5f;
 
     private Piece _activePiece;
     [SerializeField] private Board _board;
@@ -19,6 +19,9 @@ namespace Managers {
     private float _dropTimer;
     private bool _gameOver;
     [SerializeField] private GameObject _gameOverPanel;
+    [SerializeField] private Ghost _ghost;
+    [SerializeField] private Holder _holder;
+    private bool _inputReady;
     private float _inputTimer;
     private bool _isPaused;
     [SerializeField] private GameObject _pausePanel;
@@ -28,6 +31,33 @@ namespace Managers {
     [SerializeField] private GameObject _screenFader;
     [SerializeField] private SoundManager _soundManager;
     [SerializeField] private Spawner _spawner;
+
+    public void Hold() {
+      if (_holder == null) {
+        return;
+      }
+
+      if (_holder.HeldPiece == null) {
+        _holder.Catch(_activePiece);
+        _activePiece = _spawner.SpawnPiece();
+
+        PlayFx(_soundManager.HoldSound);
+      } else if (_holder.canRelease) {
+        Piece piece = _activePiece;
+        _activePiece = _holder.Release();
+        _activePiece.transform.position = _spawner.transform.position;
+        _holder.Catch(piece);
+
+        PlayFx(_soundManager.HoldSound);
+      } else {
+        Debug.LogWarning("HOLDER: Wait for cool down");
+        PlayFx(_soundManager.ErrorSound);
+      }
+
+      if (_ghost) {
+        _ghost.Reset();
+      }
+    }
 
     public void RestartLevel() {
       Time.timeScale = 1f;
@@ -58,37 +88,48 @@ namespace Managers {
     }
 
     private void DropPiece() {
-      Debug.Log($"Drop Speed: {_dropSpeed}");
       _activePiece.MoveDown();
 
-      if (!_board.IsValidPosition(_activePiece)) {
-        _activePiece.MoveUp();
+      if (_board.IsValidPosition(_activePiece)) {
+        return;
+      }
 
-        if (_board.IsAboveThreshold(_activePiece)) {
-          GameOver();
+      _activePiece.MoveUp();
+
+      if (_board.IsAboveThreshold(_activePiece)) {
+        GameOver();
+      } else {
+        _board.StorePieceInGrid(_activePiece);
+
+        if (_ghost) {
+          _ghost.Reset();
+        }
+
+        if (_holder) {
+          _holder.canRelease = true;
+        }
+
+        _activePiece = _spawner.SpawnPiece();
+        _board.ClearAllRows();
+
+        PlayFx(_soundManager.DropSound);
+
+        if (_board.CompletedRows == 0) {
+          return;
+        }
+
+        _scoreManager.ScoreLines(_board.CompletedRows);
+
+        if (_scoreManager.LeveledUp) {
+          PlayFx(_soundManager.LevelUp);
+          _dropSpeed = Mathf.Clamp(InitialDropSpeed - ((float)_scoreManager.Level - 1) * 0.05f, 0.05f, 1f);
         } else {
-          _board.StorePieceInGrid(_activePiece);
-
-          _activePiece = _spawner.SpawnPiece();
-          _board.ClearAllRows();
-
-          PlayFx(_soundManager.DropSound);
-
-          if (_board.CompletedRows > 0) {
-            _scoreManager.ScoreLines(_board.CompletedRows);
-
-            if (_scoreManager.LeveledUp) {
-              PlayFx(_soundManager.LevelUp);
-              _dropSpeed = Mathf.Clamp(InitialDropSpeed - ((float)_scoreManager.Level - 1) * 0.05f, 0.05f, 1f);
-            } else {
-              if (_board.CompletedRows > 1) {
-                PlayFx(_soundManager.GetRandomVocal());
-              }
-            }
-
-            PlayFx(_soundManager.ClearRowSound);
+          if (_board.CompletedRows > 1) {
+            PlayFx(_soundManager.GetRandomVocal());
           }
         }
+
+        PlayFx(_soundManager.ClearRowSound);
       }
     }
 
@@ -104,6 +145,12 @@ namespace Managers {
       PlayFx(_soundManager.GameOverSound);
     }
 
+    private void LateUpdate() {
+      if (_ghost != null) {
+        _ghost.DrawGhost(_activePiece, _board);
+      }
+    }
+
     private void PlayFx(AudioClip fx) {
       if (_camera == null || !_soundManager.FxEnabled || fx == null) {
         return;
@@ -113,16 +160,14 @@ namespace Managers {
     }
 
     private void ProcessInput() {
-      bool inputReady;
-
       if (_inputTimer > 0) {
-        inputReady = false;
+        _inputReady = false;
         _inputTimer -= Time.deltaTime;
       } else {
-        inputReady = true;
+        _inputReady = true;
       }
 
-      if (Input.GetKey(KeyCode.A) && inputReady || Input.GetKeyDown(KeyCode.A)) {
+      if (Input.GetKey(KeyCode.A) && _inputReady || Input.GetKeyDown(KeyCode.A)) {
         _activePiece.MoveLeft();
         _inputTimer = InputDelay;
 
@@ -132,7 +177,7 @@ namespace Managers {
         } else {
           PlayFx(_soundManager.MoveSound);
         }
-      } else if (Input.GetKey(KeyCode.D) && inputReady || Input.GetKeyDown(KeyCode.D)) {
+      } else if (Input.GetKey(KeyCode.D) && _inputReady || Input.GetKeyDown(KeyCode.D)) {
         _activePiece.MoveRight();
         _inputTimer = InputDelay;
 
@@ -144,13 +189,17 @@ namespace Managers {
         }
       }
 
-      if (Input.GetKey(KeyCode.W) && inputReady) {
+      if (Input.GetKey(KeyCode.W) && _inputReady || Input.GetKeyDown(KeyCode.W)) {
         _activePiece.RotateClockwise(_rotateClockwise);
         _inputTimer = InputDelay;
 
         if (!_board.IsValidPosition(_activePiece)) {
           _activePiece.RotateClockwise(!_rotateClockwise);
         }
+      }
+
+      if (Input.GetKeyDown(KeyCode.Space)) {
+        Hold();
       }
 
       if (Input.GetKey(KeyCode.S)) {
@@ -187,7 +236,7 @@ namespace Managers {
     }
 
     private void Update() {
-      if (_board == null || _spawner == null || _gameOver || _soundManager == null || _scoreManager == null) {
+      if (_board == null || _spawner == null || _gameOver || _soundManager == null || _scoreManager == null || _holder == null) {
         return;
       }
 
