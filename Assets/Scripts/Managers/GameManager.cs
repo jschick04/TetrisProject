@@ -88,13 +88,13 @@ namespace Managers {
     }
 
     private void DropPiece() {
-      _activePiece.MoveDown();
+      _activePiece.Move(MoveDirection.Down);
 
       if (_board.IsValidPosition(_activePiece)) {
         return;
       }
 
-      _activePiece.MoveUp();
+      _activePiece.Move(MoveDirection.Up);
 
       if (_board.IsAboveThreshold(_activePiece)) {
         GameOver();
@@ -168,21 +168,21 @@ namespace Managers {
       }
 
       if (Input.GetKey(KeyCode.A) && _inputReady || Input.GetKeyDown(KeyCode.A)) {
-        _activePiece.MoveLeft();
+        _activePiece.Move(MoveDirection.Left);
         _inputTimer = InputDelay;
 
         if (!_board.IsValidPosition(_activePiece)) {
-          _activePiece.MoveRight();
+          _activePiece.Move(MoveDirection.Right);
           PlayFx(_soundManager.ErrorSound);
         } else {
           PlayFx(_soundManager.MoveSound);
         }
       } else if (Input.GetKey(KeyCode.D) && _inputReady || Input.GetKeyDown(KeyCode.D)) {
-        _activePiece.MoveRight();
+        _activePiece.Move(MoveDirection.Right);
         _inputTimer = InputDelay;
 
         if (!_board.IsValidPosition(_activePiece)) {
-          _activePiece.MoveLeft();
+          _activePiece.Move(MoveDirection.Left);
           PlayFx(_soundManager.ErrorSound);
         } else {
           PlayFx(_soundManager.MoveSound);
@@ -204,10 +204,10 @@ namespace Managers {
 
       if (Input.GetKey(KeyCode.S)) {
         if (_downInputTimer <= 0) {
-          _activePiece.MoveDown();
+          _activePiece.Move(MoveDirection.Down);
 
           if (!_board.IsValidPosition(_activePiece)) {
-            _activePiece.MoveUp();
+            _activePiece.Move(MoveDirection.Up);
           }
 
           _downInputTimer = DownInputDelay;

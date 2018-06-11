@@ -2,27 +2,44 @@
 
 namespace Core {
 
+  public enum MoveDirection {
+
+    Up,
+    Down,
+    Left,
+    Right
+
+  }
+
   public class Piece : MonoBehaviour {
 
-    [SerializeField] private bool _canRotate = true;
+    private bool _canRotate = true;
     [SerializeField] private Vector3 _queueOffset;
 
     public Vector3 QueueOffset => _queueOffset;
 
-    public void MoveDown() {
-      Move(new Vector3(0, -1, 0));
-    }
+    public void Move(MoveDirection moveDirection) {
+      Vector3 newPosition;
 
-    public void MoveLeft() {
-      Move(new Vector3(-1, 0, 0));
-    }
+      switch (moveDirection) {
+        case MoveDirection.Up :
+          newPosition = new Vector3(0, 1, 0);
+          break;
+        case MoveDirection.Down :
+          newPosition = new Vector3(0, -1, 0);
+          break;
+        case MoveDirection.Left :
+          newPosition = new Vector3(-1, 0, 0);
+          break;
+        case MoveDirection.Right :
+          newPosition = new Vector3(1, 0, 0);
+          break;
+        default :
+          newPosition = Vector3.zero;
+          break;
+      }
 
-    public void MoveRight() {
-      Move(new Vector3(1, 0, 0));
-    }
-
-    public void MoveUp() {
-      Move(new Vector3(0, 1, 0));
+      transform.position += newPosition;
     }
 
     public void RotateClockwise(bool clockwise) {
@@ -43,10 +60,6 @@ namespace Core {
       if (_canRotate) {
         transform.Rotate(0, 0, -90);
       }
-    }
-
-    private void Move(Vector3 moveDirection) {
-      transform.position += moveDirection;
     }
 
   }

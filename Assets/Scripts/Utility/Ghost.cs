@@ -27,10 +27,10 @@ namespace Utility {
       _hitBottom = false;
 
       while (!_hitBottom) {
-        _ghostPiece.MoveDown();
+        _ghostPiece.Move(MoveDirection.Down);
 
         if (!board.IsValidPosition(_ghostPiece)) {
-          _ghostPiece.MoveUp();
+          _ghostPiece.Move(MoveDirection.Up);
           _hitBottom = true;
         }
       }
