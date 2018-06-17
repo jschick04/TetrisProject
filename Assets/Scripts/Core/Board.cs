@@ -9,18 +9,17 @@ namespace Core {
     [SerializeField] private const int Height = 30;
     [SerializeField] private const int Width = 10;
 
-    private int _completedRows;
     [SerializeField] private Transform _emptySprite;
     private Transform[,] _grid;
 
-    public int CompletedRows => _completedRows;
+    public int CompletedRows { get; private set; }
 
     public void ClearAllRows() {
-      _completedRows = 0;
+      CompletedRows = 0;
 
       for (int y = 0; y < Height; y++) {
         if (IsComplete(y)) {
-          _completedRows++;
+          CompletedRows++;
           ClearRow(y);
           MoveAllRowsDown(y + 1);
           y--;
