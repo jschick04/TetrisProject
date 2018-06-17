@@ -5,19 +5,20 @@ namespace Core {
 
   public class Board : MonoBehaviour {
 
+    [SerializeField] private const int Header = 8;
+    [SerializeField] private const int Height = 30;
+    [SerializeField] private const int Width = 10;
+
     private int _completedRows;
     [SerializeField] private Transform _emptySprite;
     private Transform[,] _grid;
-    [SerializeField] private int _header = 8;
-    [SerializeField] private int _height = 30;
-    [SerializeField] private int _width = 10;
 
     public int CompletedRows => _completedRows;
 
     public void ClearAllRows() {
       _completedRows = 0;
 
-      for (int y = 0; y < _height; y++) {
+      for (int y = 0; y < Height; y++) {
         if (IsComplete(y)) {
           _completedRows++;
           ClearRow(y);
@@ -29,7 +30,7 @@ namespace Core {
 
     public bool IsAboveThreshold(Piece piece) {
       foreach (Transform child in piece.transform) {
-        if (child.transform.position.y >= _height - _header - 1) {
+        if (child.transform.position.y >= Height - Header - 1) {
           return true;
         }
       }
@@ -65,11 +66,11 @@ namespace Core {
     }
 
     private void Awake() {
-      _grid = new Transform[_width, _height];
+      _grid = new Transform[Width, Height];
     }
 
     private void ClearRow(int y) {
-      for (int x = 0; x < _width; x++) {
+      for (int x = 0; x < Width; x++) {
         if (_grid[x, y] != null) {
           Destroy(_grid[x, y].gameObject);
           _grid[x, y] = null;
@@ -79,8 +80,8 @@ namespace Core {
 
     private void DrawEmptyCells() {
       if (_emptySprite != null) {
-        for (int y = 0; y < _height - _header; y++) {
-          for (int x = 0; x < _width; x++) {
+        for (int y = 0; y < Height - Header; y++) {
+          for (int x = 0; x < Width; x++) {
             Transform clone = Instantiate(_emptySprite, new Vector3(x, y, 0), Quaternion.identity);
             clone.name = $"Board Space ({x}, {y})";
             clone.transform.parent = transform;
@@ -92,7 +93,7 @@ namespace Core {
     }
 
     private bool IsComplete(int y) {
-      for (int x = 0; x < _width; x++) {
+      for (int x = 0; x < Width; x++) {
         if (_grid[x, y] == null) {
           return false;
         }
@@ -104,16 +105,16 @@ namespace Core {
     private bool IsOccupied(int x, int y, Piece piece) =>
       _grid[x, y] != null && _grid[x, y].parent != piece.transform;
 
-    private bool IsWithinBoard(int x, int y) => x >= 0 && x < _width && y >= 0;
+    private bool IsWithinBoard(int x, int y) => x >= 0 && x < Width && y >= 0;
 
     private void MoveAllRowsDown(int baseY) {
-      for (int y = baseY; y < _height; y++) {
+      for (int y = baseY; y < Height; y++) {
         MoveRowDown(y);
       }
     }
 
     private void MoveRowDown(int y) {
-      for (int x = 0; x < _width; x++) {
+      for (int x = 0; x < Width; x++) {
         if (_grid[x, y] != null) {
           _grid[x, y - 1] = _grid[x, y];
           _grid[x, y] = null;

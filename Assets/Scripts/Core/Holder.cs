@@ -25,6 +25,7 @@ namespace Core {
 
       if (_holderTransform) {
         piece.transform.position = _holderTransform.position + piece.QueueOffset;
+        piece.transform.rotation = new Quaternion(0, 0, 0, 0);
         piece.transform.localScale = new Vector3(Scale, Scale, Scale);
         HeldPiece = piece;
       } else {
